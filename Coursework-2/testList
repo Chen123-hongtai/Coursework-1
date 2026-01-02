@@ -1,0 +1,71 @@
+Test Case Summary
+1. test_yoy_change_basic (Unit test)
+Purpose: Verify the correctness of the normal year-on-year change calculation.
+GIVEN: Market 1 has a value of 100 in January 2023 and 120 in January 2024.
+WHEN: yoy_change(session, 1, 2024-01)
+THEN: The result should be (120−100)/100 = 0.20
+2. test_yoy_change_no_previous_year (Unit test)
+Purpose: Return None if there is no data for the previous year.
+GIVEN: Market 1 only has records for January 2024.
+WHEN: yoy_change(session, 1, 2024-01)
+THEN: Return None
+3. test_yoy_change_previous_year_zero (Unit test)
+Purpose: Avoid division by zero.
+GIVEN: 2023-01 = 0, 2024-01 = 100
+WHEN Calculate year-on-year change
+THEN Returns None instead of throwing an exception or infinity
+4. test_yoy_change_current_value_missing (Unit test)
+Purpose: Handling missing values for the current month
+GIVEN 2024-01 = NULL
+WHEN Call yoy_change
+THEN Returns None
+5. test_yoy_change_previous_year_missing (Unit test)
+Purpose: Handling missing values from last year
+GIVEN 2023-01 = NULL, 2024-01 = 100
+WHEN Call yoy_change
+THEN Returns None
+6. test_moving_average_basic (Unit test)
+Purpose: Calculating the rolling average correctly
+GIVEN value sequence: 10, 20, 30, window=2
+WHEN Call moving_average
+THEN Result: [None, 15, 25]
+7. test_moving_average_window_one (Unit test)
+Purpose: Return the original value when window=1
+GIVEN value sequence: 10, 20
+WHEN window=1
+THEN result: [None, 20]
+8. test_moving_average_handles_missing_values (Unit test)
+Purpose: Missing values should be ignored
+GIVEN 10, NULL, 30; window=2
+WHEN calculate the rolling mean
+THEN [None, 10, 30]
+9. test_moving_average_empty_series (Unit test)
+Purpose: Handle empty datasets safely
+GIVEN No observations
+WHEN call moving_average
+THEN returns an empty list
+10. test_missing_rate_basic (Unit test)
+Purpose: Calculate the basic missing rate
+GIVEN 4 values, 1 of which is NULL
+WHEN call missing_rate
+THEN returns 0.25
+11. test_missing_rate_all_missing (Unit test)
+Purpose: Extreme case of all missing values
+GIVEN: All values are NULL
+WHEN: missing_rate is called
+THEN: Returns 1.0
+12. test_missing_rate_empty_range (Unit test)
+Purpose: Empty range
+GIVEN: No data is available within this time range
+WHEN: missing_rate is called
+THEN: Returns 0
+13. test_analysis_functions_do_not_modify_database (Unit test)
+Purpose: Side effect test (high score)
+GIVEN: Observation already exists in the database
+WHEN: moving_average and yoy_change are called
+THEN: Database records are completely consistent (no writes, no modifications)
+14. test_integration_yoy_and_moving_average_with_file_db (Integration test)
+Purpose: Real integration of ORM + SQLite + analytic functions
+GIVEN: Uses a file-based SQLite database, inserting series and... Observations
+WHEN The session is reopened and the analysis functions are called
+THEN yoy_change and moving_average return results consistent with the data.
