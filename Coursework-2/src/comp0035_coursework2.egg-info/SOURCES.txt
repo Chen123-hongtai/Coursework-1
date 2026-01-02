@@ -1,0 +1,12 @@
+README.md
+pyproject.toml
+src/comp0035_coursework2.egg-info/PKG-INFO
+src/comp0035_coursework2.egg-info/SOURCES.txt
+src/comp0035_coursework2.egg-info/dependency_links.txt
+src/comp0035_coursework2.egg-info/requires.txt
+src/comp0035_coursework2.egg-info/top_level.txt
+src/tourism_timeseries/__init__.py
+src/tourism_timeseries/analysis.py
+src/tourism_timeseries/database.py
+src/tourism_timeseries/models.py
+tests/test_analysis.py

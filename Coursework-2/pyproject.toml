@@ -1,0 +1,20 @@
+[project]
+name = "comp0035-coursework2"
+version = "0.2.0"
+description = "Tourism time-series analysis ORM and tests"
+authors = [{ name = "Chen123-hongtai" }]
+dependencies = [
+    "pandas>=2.0",
+    "sqlmodel>=0.0.16",
+    "SQLAlchemy>=2.0",
+]
+requires-python = ">=3.11"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B"]

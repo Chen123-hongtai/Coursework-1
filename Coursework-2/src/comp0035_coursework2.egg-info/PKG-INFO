@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: comp0035-coursework2
+Version: 0.2.0
+Summary: Tourism time-series analysis ORM and tests
+Author: Chen123-hongtai
+Requires-Python: >=3.11
+Requires-Dist: pandas>=2.0
+Requires-Dist: sqlmodel>=0.0.16
+Requires-Dist: SQLAlchemy>=2.0

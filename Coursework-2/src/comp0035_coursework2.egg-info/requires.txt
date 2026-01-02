@@ -1,0 +1,3 @@
+pandas>=2.0
+sqlmodel>=0.0.16
+SQLAlchemy>=2.0
