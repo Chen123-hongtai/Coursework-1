@@ -1,71 +1,120 @@
-Test Case Summary
 1. test_yoy_change_basic (Unit test)
-Purpose: Verify the correctness of the normal year-on-year change calculation.
-GIVEN: Market 1 has a value of 100 in January 2023 and 120 in January 2024.
-WHEN: yoy_change(session, 1, 2024-01)
-THEN: The result should be (120−100)/100 = 0.20
+
+GIVEN series 1 has values for the same month in consecutive years (e.g., 2023-01=100, 2024-01=120)
+WHEN yoy_change(session, 1, 2024-01) is computed
+THEN YoY is returned as a percentage (e.g., 20.0 for +20%).
+
 2. test_yoy_change_no_previous_year (Unit test)
-Purpose: Return None if there is no data for the previous year.
-GIVEN: Market 1 only has records for January 2024.
-WHEN: yoy_change(session, 1, 2024-01)
-THEN: Return None
+
+GIVEN the current month exists but the previous-year month is missing
+WHEN yoy_change is called
+THEN returns None (no comparable baseline).
+
 3. test_yoy_change_previous_year_zero (Unit test)
-Purpose: Avoid division by zero.
-GIVEN: 2023-01 = 0, 2024-01 = 100
-WHEN Calculate year-on-year change
-THEN Returns None instead of throwing an exception or infinity
+
+GIVEN previous-year value is 0 (division unsafe)
+WHEN yoy_change is called
+THEN returns None to avoid invalid growth output.
+
 4. test_yoy_change_current_value_missing (Unit test)
-Purpose: Handling missing values for the current month
-GIVEN 2024-01 = NULL
-WHEN Call yoy_change
-THEN Returns None
+
+GIVEN the current month value is NULL
+WHEN yoy_change is called
+THEN returns None.
+
 5. test_yoy_change_previous_year_missing (Unit test)
-Purpose: Handling missing values from last year
-GIVEN 2023-01 = NULL, 2024-01 = 100
-WHEN Call yoy_change
-THEN Returns None
+
+GIVEN the previous-year month value is NULL
+WHEN yoy_change is called
+THEN returns None.
+
 6. test_moving_average_basic (Unit test)
-Purpose: Calculating the rolling average correctly
-GIVEN value sequence: 10, 20, 30, window=2
-WHEN Call moving_average
-THEN Result: [None, 15, 25]
+
+GIVEN a simple series (e.g., 10, 20, 30)
+WHEN moving_average(session, id, window=2) is computed
+THEN returns a rolling mean series with the first point None and subsequent means correct.
+
 7. test_moving_average_window_one (Unit test)
-Purpose: Return the original value when window=1
-GIVEN value sequence: 10, 20
-WHEN window=1
-THEN result: [None, 20]
+
+GIVEN any non-empty series
+WHEN window=1 is used
+THEN the output aligns with the series values (subject to the “first point None” convention).
+
 8. test_moving_average_handles_missing_values (Unit test)
-Purpose: Missing values should be ignored
-GIVEN 10, NULL, 30; window=2
-WHEN calculate the rolling mean
-THEN [None, 10, 30]
+
+GIVEN missing values inside the series (e.g., 10, NULL, 30)
+WHEN moving average is computed
+THEN missing values are ignored when calculating the rolling mean.
+
 9. test_moving_average_empty_series (Unit test)
-Purpose: Handle empty datasets safely
-GIVEN No observations
-WHEN call moving_average
-THEN returns an empty list
+
+GIVEN no observations exist for a series
+WHEN moving_average is called
+THEN returns an empty list.
+
 10. test_missing_rate_basic (Unit test)
-Purpose: Calculate the basic missing rate
-GIVEN 4 values, 1 of which is NULL
-WHEN call missing_rate
-THEN returns 0.25
+
+GIVEN a range containing both valid and NULL observations
+WHEN missing_rate(session, id, start, end) is computed
+THEN returns the correct missing proportion (e.g., 1/4 = 0.25).
+
 11. test_missing_rate_all_missing (Unit test)
-Purpose: Extreme case of all missing values
-GIVEN: All values are NULL
-WHEN: missing_rate is called
-THEN: Returns 1.0
+
+GIVEN all observations in the range are NULL
+WHEN missing_rate is computed
+THEN returns 1.0.
+
 12. test_missing_rate_empty_range (Unit test)
-Purpose: Empty range
-GIVEN: No data is available within this time range
-WHEN: missing_rate is called
-THEN: Returns 0
+
+GIVEN no observations exist in the requested date range
+WHEN missing_rate is computed
+THEN returns the defined neutral result (e.g., 0.0) without error.
+
 13. test_analysis_functions_do_not_modify_database (Unit test)
-Purpose: Side effect test (high score)
-GIVEN: Observation already exists in the database
-WHEN: moving_average and yoy_change are called
-THEN: Database records are completely consistent (no writes, no modifications)
+
+GIVEN an existing set of observations
+WHEN analysis functions are called
+THEN the database contents remain unchanged (read-only guarantee; no side-effects).
+
 14. test_integration_yoy_and_moving_average_with_file_db (Integration test)
-Purpose: Real integration of ORM + SQLite + analytic functions
-GIVEN: Uses a file-based SQLite database, inserting series and... Observations
-WHEN The session is reopened and the analysis functions are called
-THEN yoy_change and moving_average return results consistent with the data.
+
+GIVEN a file-based SQLite database populated and then reopened in a new session
+WHEN yoy_change and moving_average are executed
+THEN results remain correct across sessions, validating ORM mapping + persistence.
+
+B. Series hierarchy queries & classmethod entry points (6 tests)
+15. test_seriesmaster_get_children_returns_all_children (Unit test)
+
+GIVEN a Region node with multiple Market children
+WHEN SeriesMaster.get_children(session, parent_id) is called
+THEN all direct children are returned.
+
+16. test_seriesmaster_get_children_is_ordered_by_name (Unit test)
+
+GIVEN children with unsorted names
+WHEN get_children is called
+THEN results are ordered lexicographically by name.
+
+17. test_seriesmaster_get_children_empty_when_no_children (Unit test)
+
+GIVEN a node with no children
+WHEN get_children is called
+THEN returns an empty list.
+
+18. test_seriesmaster_get_by_level_filters_correctly (Unit test)
+
+GIVEN mixed level values (Total/Region/Market), and the environment may contain pre-seeded rows
+WHEN SeriesMaster.get_by_level(session, "region") is called
+THEN the result set contains the expected region(s) and all returned rows have level == "region".
+
+19. test_seriesmaster_get_by_level_is_ordered_by_name (Unit test)
+
+GIVEN multiple series in the same level
+WHEN get_by_level is called
+THEN results are ordered by name.
+
+20. test_observation_classmethods_match_analysis_functions (Unit test)
+
+GIVEN a minimal dataset for a market with two years of observations
+WHEN calling Observation.yoy_change(...) and Observation.moving_average(...)
+THEN classmethod wrappers return correct analytical outputs, demonstrating that ORM classes expose domain behaviour as required.
