@@ -9,7 +9,7 @@ It focuses on SQLModel ORM usage, tourism time-series analytics, and high-qualit
   - `yoy_change` – year-on-year percentage change for a given series/month.
   - `moving_average` – rolling mean for a series (configurable window).
   - `missing_rate` – proportion of NULL values over a date range.
-- Pytest suite (14 tests) covering unit and integration scenarios, boundary cases, and NULL handling.
+- Pytest suite (12 tests) covering unit and integration scenarios, boundary cases, and NULL handling.
 
 ## Setup
 ```bash
